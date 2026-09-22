@@ -3,6 +3,7 @@ import { PromptInput } from './components/PromptInput';
 import { ComponentCard } from './components/ComponentCard';
 import { useComponentGenerator } from './hooks/useComponentGenerator';
 import type { Provider } from './types';
+import { STORAGE_KEYS, parseStoredApiKey, parseStoredProvider } from './utils/storage';
 import './App.css';
 
 const PROVIDER_CONFIG = {
@@ -11,9 +12,11 @@ const PROVIDER_CONFIG = {
 } as const;
 
 function App() {
-  const [apiKey, setApiKey] = useState('');
+  const [apiKey, setApiKey] = useState(() => parseStoredApiKey(localStorage.getItem(STORAGE_KEYS.apiKey)));
   const [showKey, setShowKey] = useState(false);
-  const [provider, setProvider] = useState<Provider>('google');
+  const [provider, setProvider] = useState<Provider>(() =>
+    parseStoredProvider(localStorage.getItem(STORAGE_KEYS.provider), 'google'),
+  );
   const [envKeys, setEnvKeys] = useState<Record<Provider, boolean>>({
     anthropic: false,
     google: false,
@@ -27,6 +30,14 @@ function App() {
       .then((data) => setEnvKeys(data.envKeys))
       .catch(() => {});
   }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.apiKey, apiKey);
+  }, [apiKey]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEYS.provider, provider);
+  }, [provider]);
 
   const hasEnvKey = envKeys[provider];
 
