@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PROMPT_MAX_LENGTH, isPromptLengthValid } from '../utils/promptValidation';
 
 interface PromptInputProps {
   onGenerate: (prompt: string) => void;
@@ -16,10 +17,11 @@ const EXAMPLES = [
 
 export function PromptInput({ onGenerate, isLoading }: PromptInputProps) {
   const [prompt, setPrompt] = useState('');
+  const isLengthValid = isPromptLengthValid(prompt);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (prompt.trim() && !isLoading) {
+    if (prompt.trim() && !isLoading && isLengthValid) {
       onGenerate(prompt.trim());
     }
   };
@@ -50,7 +52,7 @@ export function PromptInput({ onGenerate, isLoading }: PromptInputProps) {
         <button
           type="submit"
           className="btn-generate"
-          disabled={!prompt.trim() || isLoading}
+          disabled={!prompt.trim() || isLoading || !isLengthValid}
         >
           {isLoading ? (
             <span className="loading-spinner">생성 중...</span>
@@ -59,6 +61,9 @@ export function PromptInput({ onGenerate, isLoading }: PromptInputProps) {
           )}
         </button>
       </form>
+      {!isLengthValid && (
+        <p className="prompt-length-error">{PROMPT_MAX_LENGTH}자를 초과했습니다.</p>
+      )}
       <div className="prompt-examples">
         <span className="examples-label">// 예시 프롬프트</span>
         {EXAMPLES.map((example) => (
